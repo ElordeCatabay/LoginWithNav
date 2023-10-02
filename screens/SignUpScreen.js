@@ -2,34 +2,61 @@ import { View, Text, TouchableOpacity, Image, TextInput } from 'react-native'
 import React, { useState } from 'react'
 import { themeColors } from '../theme'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import {ArrowLeftIcon} from 'react-native-heroicons/solid';
 import { useNavigation } from '@react-navigation/native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../config/firebase';
+import 'expo-dev-client';
+import { ArrowLeftIcon } from 'react-native-heroicons/solid';
 
-// subscribe for more videos like this :)
 export default function SignUpScreen() {
     const navigation = useNavigation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [fullname, setFullname] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [FullName, setFullName] = useState('');
+    const [passwordsMatch, setPasswordsMatch] = useState(true);
+    const [isSecureEntry, setIsSecureEntry] = useState(true); 
 
-    const handleSubmit = async ()=>{
-        if(email && password){
-            try{
-                await createUserWithEmailAndPassword(auth, email, password);
-            }catch(err){
-                console.log('got error: ',err.message);
+    const handlePasswordChange = (value) => {
+        setPassword(value);
+        setPasswordsMatch(value === confirmPassword);
+    };
+    
+    const handleConfirmPasswordChange = (value) => {
+        setConfirmPassword(value);
+        setPasswordsMatch(value === password);
+    };
+    
+    const handleSubmit = async () => {
+        if (email && password && passwordsMatch && FullName) {
+            try {
+                await createUserWithEmailAndPassword(auth, email, password, FullName);
+            } catch (err) {
+                console.log('got error: ', err.message);    
+            }
+        } else {
+            // Check for empty fields and password matching
+            if (!FullName) {
+                alert('Please enter your Full Name');
+            } else if (!email) {
+                alert('Please enter your Email Address');
+            } else if (!password) {
+                alert('Please enter your Password');
+            } else if (!confirmPassword) {
+                alert('Please confirm your Password');
+            } else if (!passwordsMatch) {
+                alert('Password and Confirm Password must match');
             }
         }
-    }
+    };
+
   return (
-    <View className="flex-1 bg-white" style={{backgroundColor: themeColors.bg}}>
+    <View className="flex-1  bg-white" style={{backgroundColor: themeColors.bg}}>
       <SafeAreaView className="flex">
         <View className="flex-row justify-start">
             <TouchableOpacity 
                 onPress={()=> navigation.goBack()}
-                className="bg-yellow-400 p-2 rounded-tr-2xl rounded-bl-2xl ml-4"
+                className="bg-yellow-400 p-4 rounded-tr-2xl rounded-bl-2xl ml-3"
             >
                 <ArrowLeftIcon size="20" color="black" />
             </TouchableOpacity>
@@ -45,30 +72,57 @@ export default function SignUpScreen() {
         <View className="form space-y-2">
             <Text className="text-gray-700 ml-4">Full Name</Text>
             <TextInput
-                className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3"
-                value={fullname}
-                onChangeText={value=> setFullname(value)}
+                className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-0"
+                value={FullName}
+                onChangeText={value=>setFullName(value)}
                 placeholder='Enter Name'
             />
             <Text className="text-gray-700 ml-4">Email Address</Text>
             <TextInput
-                className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-3"
+                className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-0"
                 value={email}
                 onChangeText={value=> setEmail(value)}
                 placeholder='Enter Email'
             />
             <Text className="text-gray-700 ml-4">Password</Text>
-            <TextInput
-                className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-7"
-                secureTextEntry
-                value={password}
-                onChangeText={value=> setPassword(value)}
-                placeholder='Enter Password'
-            />
-            <TouchableOpacity
-                className="py-3 bg-yellow-400 rounded-xl"
-                onPress={handleSubmit}
-            >
+                    <TextInput
+                        className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-0"
+                        secureTextEntry={isSecureEntry}
+                        value={password}
+                        onChangeText={handlePasswordChange}
+                        placeholder="Enter Password"
+                    />
+                    <TouchableOpacity
+                        onPress={() => {
+                            setIsSecureEntry((prev) => !prev);
+                        }}
+                        style={{ position: 'absolute', right: 20, top: 235 }} 
+                    >
+                        <Text>{isSecureEntry ? "Show" : "Hide"}</Text>
+                    </TouchableOpacity>
+                    <Text className="text-gray-700 ml-1">Confirm Password</Text>
+                    <TextInput
+                        className="p-4 bg-gray-100 text-gray-700 rounded-2xl mb-0"
+                        secureTextEntry={isSecureEntry}
+                        value={confirmPassword}
+                        onChangeText={handleConfirmPasswordChange}
+                        placeholder="Confirm Password"
+                    />
+                    <TouchableOpacity
+                        onPress={() => {
+                            setIsSecureEntry((prev) => !prev);
+                        }}
+                        style={{ position: 'absolute', right: 20, top: 325}} 
+                    >
+                        <Text>{isSecureEntry ? "Show" : "Hide"}</Text>
+                    </TouchableOpacity>
+                    {!passwordsMatch && (
+                        <Text className="text-red-500 ml-4">Passwords do not match</Text>
+                    )}
+                    <TouchableOpacity
+                        className="py-3 bg-yellow-400 rounded-xl"
+                        onPress={handleSubmit}
+                    >
                 <Text className="font-xl font-bold text-center text-gray-700">
                     Sign Up
                 </Text>

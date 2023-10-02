@@ -9,6 +9,7 @@ import { auth } from '../config/firebase'
 
 export default function LoginScreen() {
   const navigation = useNavigation();
+   const [isSecureEntry, setIsSecureEntry] = useState(true);
   const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -51,17 +52,25 @@ export default function LoginScreen() {
             <Text className="text-gray-700 ml-4">Password</Text>
             <TextInput 
               className="p-4 bg-gray-100 text-gray-700 rounded-2xl"
-              secureTextEntry
+               secureTextEntry={isSecureEntry}
               placeholder="password"
               value={password}
                 onChangeText={value=> setPassword(value)} 
             />
-            <TouchableOpacity className="flex items-end">
-              <Text className="text-gray-700 mb-5">Forgot Password?</Text>
-            </TouchableOpacity>
+             <TouchableOpacity
+            onPress={() => {
+              setIsSecureEntry(prev => !prev);
+            }}
+            style={{ position: 'absolute', right: 20, top: 147}} >
+            <Text>{isSecureEntry ? "Show" : "Hide"}</Text>
+          </TouchableOpacity>
+
+            <TouchableOpacity onPress={()=> navigation.navigate('ForgotPassword')} className="flex items-end">
+            <Text className="text-gray-700 mb-5">Forgot Password?</Text>
+          </TouchableOpacity>
             <TouchableOpacity 
               onPress={handleSubmit}
-              className="py-3 bg-yellow-400 rounded-xl">
+              className="py-2 bg-yellow-400 rounded-xl">
                 <Text 
                     className="text-xl font-bold text-center text-gray-700"
                 >
